@@ -64,12 +64,11 @@ headers_waybills = {
 params_waybills = (('orderStatus', ['ACCEPTED_BY_MERCHANT', 'SUSPENDED']),
                     ('orderTab', 'KASPI_DELIVERY_WAIT_FOR_COURIER'),)
 
-response = requests.get('https://kaspi.kz/merchantcabinet/api/order/downloadWaybills', headers=headers_waybills,
-                        params=params_waybills, cookies=cookies_merchant)
+response_orders_delivery = requests.get('https://kaspi.kz/merchantcabinet/api/order/downloadWaybills', headers=headers_waybills,
+                                       params=params_waybills, cookies=cookies_merchant)
 
 with open('WAYBILLS.zip', 'wb') as f:
-    f.write(response.content)
-
+    f.write(response_orders_delivery.content)
 
 ###################    EXTRACTING the files FROM the .ZIP
 try:
@@ -80,8 +79,6 @@ except:
     print("Not a valid zip file...")
 
 files = os.listdir("WAYBILLS")
-
-
 ###################    CHECKING and SENDING, if NOT SENT
 if os.path.exists("order_ids_sent.json"):
     with open("order_ids_sent.json", 'r') as oi:    # READING order_ids SENT to TG
@@ -115,6 +112,38 @@ else:
 ###################    CLEANING UP
 os.remove("WAYBILLS.zip")
 shutil.rmtree('WAYBILLS')
+
+
+###################    GET ALL ORDERS INFO - SHIPPED and UNSHIPPED
+headers_orders_delivery = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Pragma': 'no-cache',
+    'Referer': 'https://kaspi.kz/mc/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-GPC': '1',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'x-source': 'v2',
+}
+params_orders_delivery = (                              # get orders from 11.11.22
+    ('orderStatus', 'null'),
+    ('searchTerm', ''),
+    ('cityId', 'undefined'),
+    ('filterFromDate', '11.11.2022'),
+    ('filterToDate', 'Invalid date'),
+    ('orderTab', 'KASPI_DELIVERY_TRANSMITTED'),
+)
+
+response_orders_delivery = requests.get('https://kaspi.kz/merchantcabinet/api/order/exportToExcel',
+                                        headers=headers_orders_delivery, params=params_orders_delivery,
+                                        cookies=cookies_merchant)
+
+with open('ЗАКАЗЫ.xlsx', 'wb') as zkz:
+    zkz.write(response_orders_delivery.content)
 
 
 
