@@ -64,11 +64,11 @@ headers_waybills = {
 params_waybills = (('orderStatus', ['ACCEPTED_BY_MERCHANT', 'SUSPENDED']),
                     ('orderTab', 'KASPI_DELIVERY_WAIT_FOR_COURIER'),)
 
-response_orders_delivery = requests.get('https://kaspi.kz/merchantcabinet/api/order/downloadWaybills', headers=headers_waybills,
+response_active_orders = requests.get('https://kaspi.kz/merchantcabinet/api/order/downloadWaybills', headers=headers_waybills,
                                        params=params_waybills, cookies=cookies_merchant)
 
 with open('WAYBILLS.zip', 'wb') as f:
-    f.write(response_orders_delivery.content)
+    f.write(response_active_orders.content)
 
 ###################    EXTRACTING the files FROM the .ZIP
 try:
@@ -114,8 +114,60 @@ os.remove("WAYBILLS.zip")
 shutil.rmtree('WAYBILLS')
 
 
-###################    GET ALL ORDERS INFO - SHIPPED and UNSHIPPED
-headers_orders_delivery = {
+# ###################    GET ALL active ORDERS INFO - SHIPPED and UNSHIPPED
+# headers_active_orders = {
+#     'Accept': 'application/json, text/plain, */*',
+#     'Accept-Language': 'en-US,en;q=0.9',
+#     'Cache-Control': 'no-cache',
+#     'Connection': 'keep-alive',
+#     'Pragma': 'no-cache',
+#     'Referer': 'https://kaspi.kz/mc/',
+#     'Sec-Fetch-Dest': 'empty',
+#     'Sec-Fetch-Mode': 'cors',
+#     'Sec-Fetch-Site': 'same-origin',
+#     'Sec-GPC': '1',
+#     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+#     'x-source': 'v2',
+# }
+# params_active_orders = (                              # get orders from 11.11.22
+#     ('orderStatus', 'null'),
+#     ('searchTerm', ''),
+#     ('cityId', 'undefined'),
+#     ('filterFromDate', '11.11.2022'),
+#     ('filterToDate', 'Invalid date'),
+#     ('orderTab', 'KASPI_DELIVERY_TRANSMITTED'),
+# )
+#
+# response_active_orders = requests.get('https://kaspi.kz/merchantcabinet/api/order/exportToExcel',
+#                                         headers=headers_active_orders, params=params_active_orders,
+#                                         cookies=cookies_merchant)
+# with open('ACTIVE ORDERS.xlsx', 'wb') as zkz:
+#     zkz.write(response_active_orders.content)
+#
+#
+#
+#
+#
+# ###################    GET ALL archive ORDERS INFO
+# params_archive_orders = (
+#     ('orderStatus', 'null'),
+#     ('searchTerm', ''),
+#     ('cityId', 'undefined'),
+#     ('filterFromDate', '11.11.2022'),
+#     ('filterToDate', 'Invalid date'),
+#     ('orderTab', 'ARCHIVE'),
+# )
+#
+# response_archive_orders = requests.get('https://kaspi.kz/merchantcabinet/api/order/exportToExcel',
+#                                        headers=headers_active_orders, params=params_archive_orders,
+#                                        cookies=cookies_merchant)
+#
+# with open('ARCHIVE ORDERS.xlsx', 'wb') as zkz:
+#     zkz.write(response_archive_orders.content)
+
+
+###################    (2) GET ALL active ORDERS INFO - SHIPPED and UNSHIPPED
+headers_orders_to_excel = {
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.9',
     'Cache-Control': 'no-cache',
@@ -129,25 +181,21 @@ headers_orders_delivery = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
     'x-source': 'v2',
 }
-params_orders_delivery = (                              # get orders from 11.11.22
-    ('orderStatus', 'null'),
-    ('searchTerm', ''),
-    ('cityId', 'undefined'),
-    ('filterFromDate', '11.11.2022'),
-    ('filterToDate', 'Invalid date'),
-    ('orderTab', 'KASPI_DELIVERY_TRANSMITTED'),
-)
-
-response_orders_delivery = requests.get('https://kaspi.kz/merchantcabinet/api/order/exportToExcel',
-                                        headers=headers_orders_delivery, params=params_orders_delivery,
-                                        cookies=cookies_merchant)
-
-with open('ЗАКАЗЫ.xlsx', 'wb') as zkz:
-    zkz.write(response_orders_delivery.content)
-
+def orders_to_excel(order_tab, filename):
+    params_orders_to_excel = (
+        ('orderStatus', 'null'),
+        ('searchTerm', ''),
+        ('cityId', 'undefined'),
+        ('filterFromDate', '11.11.2022'),
+        ('filterToDate', 'Invalid date'),
+        ('orderTab', order_tab),
+    )
+    response_orders_to_excel = requests.get('https://kaspi.kz/merchantcabinet/api/order/exportToExcel',
+                                           headers=headers_orders_to_excel, params=params_orders_to_excel,
+                                           cookies=cookies_merchant)
+    with open(filename, 'wb') as zkz:
+        zkz.write(response_orders_to_excel.content)
 
 
-
-
-
-
+orders_to_excel('KASPI_DELIVERY_TRANSMITTED', "ACTIVE orders.xlsx")
+orders_to_excel('ARCHIVE', "ARCHIVE orders.xlsx")
