@@ -1,14 +1,23 @@
-import requests
 from dotenv import load_dotenv
+import requests
+import zipfile
+import shutil
 import json
 import os
-import zipfile
 
 # environmental variables
 load_dotenv()
 DATA_MERCHANT_LOGIN = json.loads(os.getenv("DATA_MERCHANT_LOGIN"))  # dotenv stores in a string, so json.loads()
 BOT_TOKEN_DAILY_REPORT = os.getenv("BOT_TOKEN_DAILY_REPORT")        # DailyReportMNS
 BOT_CHAT_ID_YA = os.getenv("BOT_CHAT_ID_YA")                        # ЧАТ Я
+
+####################    SEND WAYBILLS.zip to Telegram chat
+def send_telegram_waybills():
+        files = {"document": open(f"WAYBILLS/{file}", "rb")}
+        send_file = 'https://api.telegram.org/bot' + BOT_TOKEN_DAILY_REPORT + '/sendDocument?chat_id=' + BOT_CHAT_ID_YA
+        requests.post(send_file, files=files)
+
+
 
 
 ###################    LOGGING into MERCHANT to get cookies
@@ -66,40 +75,46 @@ with open('WAYBILLS.zip', 'wb') as f:
 try:
     if zipfile.is_zipfile('WAYBILLS.zip'):
         with zipfile.ZipFile('WAYBILLS.zip', 'r') as archive:
-            archive.extractall("WAYBILLS")                      # extract to folder
+            archive.extractall("WAYBILLS")          # extract to folder
 except:
     print("Not a valid zip file...")
 
-###################    CHECKING orders already sent to TG
-try:
-    with open("order_ids_sent.json", 'r') as oi:                # READING order_ids SENT to TG
-        order_ids_sent_json = json.load(oi)
-except:
-    print("order_ids_sent.json is not found. But MOVING ON...")
-
-###################    READING filenames and sending to TG if NOT in the SENT list
-order_ids_unsent = []
 files = os.listdir("WAYBILLS")
 
-for file in files:
-    order_id = file.split("_")[1]                               # GETTING order_id from the file name
-    try:
-        if order_id in order_ids_sent_json:                     # if already sent - skip
+
+###################    CHECKING and SENDING, if NOT SENT
+if os.path.exists("order_ids_sent.json"):
+    with open("order_ids_sent.json", 'r') as oi:    # READING order_ids SENT to TG
+        order_ids_sent_json = json.load(oi)
+
+    ###################    READING filenames and sending to TG if NOT in the SENT list
+    for file in files:
+        order_id = file.split("_")[1]               # GETTING order_id from the file name
+
+        if order_id in order_ids_sent_json:         # if already sent - skip
             continue
-    except:
-        print("order_ids_sent.json is not found once again. But MOVING ON...")
 
-    order_ids_unsent.append(order_id)                           # UNSENT order_ids to a list
+        send_telegram_waybills()
+        order_ids_sent_json.append(order_id)        # APPEND UNSENT order_ids to a SENT ones
 
-    ####################    SEND WAYBILLS.zip to Telegram chat
-    files = {"document": open(f"WAYBILLS/{file}", "rb")}
-    send_file = 'https://api.telegram.org/bot' + BOT_TOKEN_DAILY_REPORT + '/sendDocument?chat_id=' + BOT_CHAT_ID_YA
-    requests.post(send_file, files=files)
+    with open("order_ids_sent.json", 'w') as oi:    # SAVING UNSENT that became SENT
+        json.dump(order_ids_sent_json, oi, indent=2)
 
-with open("order_ids_sent.json", 'w') as oi:                    # SAVING UNSENT that became SENT
-    json.dump(order_ids_unsent, oi, indent=2)
+else:
+    ###################    READING filenames and sending to TG if NOT in the SENT list
+    order_ids_sent_json = []
+    for file in files:
+        order_id = file.split("_")[1]               # GETTING order_id from the file name
+        send_telegram_waybills()
+        order_ids_sent_json.append(order_id)        # APPEND UNSENT order_ids to a SENT ones
+
+    with open("order_ids_sent.json", 'w') as oi:    # SAVING UNSENT that became SENT
+        json.dump(order_ids_sent_json, oi, indent=2)
 
 
+###################    CLEANING UP
+os.remove("WAYBILLS.zip")
+shutil.rmtree('WAYBILLS')
 
 
 
