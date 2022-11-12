@@ -2,6 +2,7 @@ import requests
 from dotenv import load_dotenv
 import json
 import os
+import zipfile
 
 # environmental variables
 load_dotenv()
@@ -35,6 +36,7 @@ response_merchant_login = session_merchant_login.post('https://kaspi.kz/merchant
 cookies_merchant = {'kaspi.storefront.cookie.city': '750000000', 'ks.cc': '-1',
                     "X-Mc-Api-Session-Id": session_merchant_login.cookies['X-Mc-Api-Session-Id']}
 
+
 ###################    DOWNLOADING WAYBILLS and SAVING as WAYBILLS.zip
 headers_waybills = {
     'Accept': 'application/json, text/plain, */*',
@@ -60,10 +62,48 @@ with open('WAYBILLS.zip', 'wb') as f:
     f.write(response.content)
 
 
+###################    EXTRACTING the files FROM the .ZIP
+try:
+    if zipfile.is_zipfile('WAYBILLS.zip'):
+        with zipfile.ZipFile('WAYBILLS.zip', 'r') as archive:
+            archive.extractall("WAYBILLS")                       # extract to folder
+except:
+    print("Not a valid zip file...")
 
-####################    SEND WAYBILLS.zip
-files = {"document": open("WAYBILLS.zip", "rb")}
-send_file = 'https://api.telegram.org/bot' + BOT_TOKEN_DAILY_REPORT + '/sendDocument?chat_id=' + BOT_CHAT_ID_YA
-requests.post(send_file, files=files)
+###################    CHECKING orders already sent to TG
+try:
+    with open("order_ids_sent.json", 'r') as oi:                    # READING order_ids SENT to TG
+        order_ids_sent_json = json.load(oi)
+except:
+    print("order_ids_sent.json is not found. But MOVING ON...")
+
+###################    READING filenames and sending to TG if NOT in the SENT list
+order_ids_unsent = []
+files = os.listdir("WAYBILLS")
+
+for file in files:
+    order_id = file.split("_")[1]                               # GETTING order_id from the file name
+    try:
+        if order_id in order_ids_sent_json:                     # if already sent - skip
+            continue
+    except:
+        print("order_ids_sent.json is not found once again. But MOVING ON...")
+
+    order_ids_unsent.append(order_id)                           # UNSENT order_ids to a list
+
+    ####################    SEND WAYBILLS.zip to Telegram chat
+    files = {"document": open(f"WAYBILLS/{file}", "rb")}
+    send_file = 'https://api.telegram.org/bot' + BOT_TOKEN_DAILY_REPORT + '/sendDocument?chat_id=' + BOT_CHAT_ID_YA
+    requests.post(send_file, files=files)
+
+with open("order_ids_sent.json", 'w') as oi:                    # SAVING UNSENT that became SENT
+    json.dump(order_ids_unsent, oi, indent=2)
+
+
+
+
+
+
+
 
 

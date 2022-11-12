@@ -1,5 +1,7 @@
 .env
 WAYBILLS.zip
+WAYBILLS
+order_ids_sent.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,intellij,osx,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,intellij,osx,windows
