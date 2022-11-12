@@ -66,13 +66,13 @@ with open('WAYBILLS.zip', 'wb') as f:
 try:
     if zipfile.is_zipfile('WAYBILLS.zip'):
         with zipfile.ZipFile('WAYBILLS.zip', 'r') as archive:
-            archive.extractall("WAYBILLS")                       # extract to folder
+            archive.extractall("WAYBILLS")                      # extract to folder
 except:
     print("Not a valid zip file...")
 
 ###################    CHECKING orders already sent to TG
 try:
-    with open("order_ids_sent.json", 'r') as oi:                    # READING order_ids SENT to TG
+    with open("order_ids_sent.json", 'r') as oi:                # READING order_ids SENT to TG
         order_ids_sent_json = json.load(oi)
 except:
     print("order_ids_sent.json is not found. But MOVING ON...")
