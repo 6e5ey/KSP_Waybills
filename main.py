@@ -18,8 +18,6 @@ def send_telegram_waybills():
         requests.post(send_file, files=files)
 
 
-
-
 ###################    LOGGING into MERCHANT to get cookies
 headers_merchant_login = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
@@ -96,7 +94,6 @@ if os.path.exists("order_ids_sent.json"):
 
     with open("order_ids_sent.json", 'w') as oi:    # SAVING UNSENT that became SENT
         json.dump(order_ids_sent_json, oi, indent=2)
-
 else:
     ###################    READING filenames and sending to TG if NOT in the SENT list
     order_ids_sent_json = []
@@ -166,7 +163,7 @@ shutil.rmtree('WAYBILLS')
 #     zkz.write(response_archive_orders.content)
 
 
-###################    (2) GET ALL active ORDERS INFO - SHIPPED and UNSHIPPED
+###################    (2) GET active AND archive ORDERS INFO - SHIPPED and UNSHIPPED
 headers_orders_to_excel = {
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.9',
