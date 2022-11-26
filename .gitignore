@@ -2,6 +2,7 @@
 order_ids_sent.json
 ACTIVE orders.xlsx
 ARCHIVE orders.xlsx
+WAYBILLS.zip
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,intellij,osx,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,intellij,osx,windows
