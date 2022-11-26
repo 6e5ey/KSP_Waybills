@@ -2,6 +2,8 @@
 order_ids_sent.json
 ACTIVE orders.xlsx
 ARCHIVE orders.xlsx
+ACTIVE_orders.xlsx
+ARCHIVE_orders.xlsx
 WAYBILLS.zip
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,intellij,osx,windows

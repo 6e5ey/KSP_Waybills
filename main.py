@@ -136,11 +136,14 @@ def orders_to_excel(order_tab, filename):
     wb.save(filename=filename)
 
     print(f"Готово: {filename}")
+    # os.system(f"open -a 'Microsoft Excel' {filename}")      # opens a file in Excel
 
 
-orders_to_excel('KASPI_DELIVERY_TRANSMITTED', "ACTIVE orders.xlsx")
-orders_to_excel('ARCHIVE', "ARCHIVE orders.xlsx")
+orders_to_excel('KASPI_DELIVERY_TRANSMITTED', "ACTIVE_orders.xlsx")
+orders_to_excel('ARCHIVE', "ARCHIVE_orders.xlsx")
 
+os.system(f"open -a 'Microsoft Excel' 'ACTIVE_orders.xlsx'")      # opens a file in Excel
+os.system(f"open -a 'Microsoft Excel' 'ARCHIVE_orders.xlsx'")      # opens a file in Excel
 
 
 
