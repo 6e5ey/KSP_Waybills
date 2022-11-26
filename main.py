@@ -1,10 +1,10 @@
+from openpyxl import load_workbook
 from dotenv import load_dotenv
 import requests
 import zipfile
 import shutil
 import json
 import os
-from openpyxl import load_workbook
 
 # environmental variables
 load_dotenv()
@@ -121,7 +121,7 @@ def orders_to_excel(order_tab, filename):
     with open(filename, 'wb') as zkz:
         zkz.write(response_orders_to_excel.content)
 
-    ##############    OPEN and REPLACE product quantity as STR to INT
+    ###################    OPEN and REPLACE product quantity as STR to INT
     wb = load_workbook(filename)
     ws = wb.active
 
@@ -144,6 +144,7 @@ orders_to_excel('ARCHIVE', "ARCHIVE_orders.xlsx")
 
 os.system(f"open -a 'Microsoft Excel' 'ACTIVE_orders.xlsx'")      # opens a file in Excel
 os.system(f"open -a 'Microsoft Excel' 'ARCHIVE_orders.xlsx'")      # opens a file in Excel
+
 
 
 
@@ -184,40 +185,40 @@ try:
     if zipfile.is_zipfile('WAYBILLS.zip'):
         with zipfile.ZipFile('WAYBILLS.zip', 'r') as archive:
             archive.extractall("WAYBILLS")          # extract to folder
-        print("")
 except:
     print("Not a valid zip file...")
-    
-files = os.listdir("WAYBILLS")
-###################    CHECKING and SENDING, if NOT SENT
-if os.path.exists("order_ids_sent.json"):
-    with open("order_ids_sent.json", 'r') as oi:    # READING order_ids SENT to TG
-        order_ids_sent_json = json.load(oi)
 
-    ###################    READING filenames and sending to TG if NOT in the SENT list
-    for file in files:
-        order_id = file.split("_")[1]               # GETTING order_id from the file name
 
-        if order_id in order_ids_sent_json:         # if already sent - skip
-            continue
+if os.path.exists("WAYBILLS"):
+    files = os.listdir("WAYBILLS")
+    ###################    CHECKING and SENDING, if NOT SENT
+    if os.path.exists("order_ids_sent.json"):
+        with open("order_ids_sent.json", 'r') as oi:  # READING order_ids SENT to TG
+            order_ids_sent_json = json.load(oi)
+        ###################    READING filenames and sending to TG if NOT in the SENT list
+        for file in files:
+            order_id = file.split("_")[1]  # GETTING order_id from the file name
+            if order_id in order_ids_sent_json:  # if already sent - skip
+                continue
 
-        send_telegram_waybills()
-        order_ids_sent_json.append(order_id)        # APPEND UNSENT order_ids to a SENT ones
+            send_telegram_waybills()
+            order_ids_sent_json.append(order_id)  # APPEND UNSENT order_ids to a SENT ones
+        with open("order_ids_sent.json", 'w') as oi:  # SAVING UNSENT that became SENT
+            json.dump(order_ids_sent_json, oi, indent=2)
 
-    with open("order_ids_sent.json", 'w') as oi:    # SAVING UNSENT that became SENT
-        json.dump(order_ids_sent_json, oi, indent=2)
+    else:
+        ###################    READING filenames and sending to TG if NOT in the SENT list
+        order_ids_sent_json = []
+        for file in files:
+            order_id = file.split("_")[1]  # GETTING order_id from the file name
+            send_telegram_waybills()
+            order_ids_sent_json.append(order_id)  # APPEND UNSENT order_ids to a SENT ones
+
+        with open("order_ids_sent.json", 'w') as oi:  # SAVING UNSENT that became SENT
+            json.dump(order_ids_sent_json, oi, indent=2)
+
+    ###################    CLEANING UP
+    os.remove("WAYBILLS.zip")
+    shutil.rmtree('WAYBILLS')
 else:
-    ###################    READING filenames and sending to TG if NOT in the SENT list
-    order_ids_sent_json = []
-    for file in files:
-        order_id = file.split("_")[1]               # GETTING order_id from the file name
-        send_telegram_waybills()
-        order_ids_sent_json.append(order_id)        # APPEND UNSENT order_ids to a SENT ones
-
-    with open("order_ids_sent.json", 'w') as oi:    # SAVING UNSENT that became SENT
-        json.dump(order_ids_sent_json, oi, indent=2)
-
-
-###################    CLEANING UP
-os.remove("WAYBILLS.zip")
-shutil.rmtree('WAYBILLS')
+    print("----- No new waybills. -----")
