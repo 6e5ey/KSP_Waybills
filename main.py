@@ -32,7 +32,7 @@ headers_merchant_login = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
 }
 session_merchant_login = requests.session()
-response_merchant_login = session_merchant_login.post('https://kaspi.kz/merchantcabinet/login',
+response_merchant_login = session_merchant_login.post('https://kaspi.kz/mc/api/login',
                                                       headers=headers_merchant_login,
                                                       data=DATA_MERCHANT_LOGIN)
 cookies_merchant = {'kaspi.storefront.cookie.city': '750000000', 'ks.cc': '-1',
